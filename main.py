@@ -8,6 +8,28 @@ from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 
 
+def getEmail():
+    email_verrified = False
+    while not email_verrified:
+        email = raw_input('Ceviu Email:')
+        if re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            email_verrified = True
+            return email
+        else:
+            print "Email not valid. Please try again"
+
+            
+def getPassword():
+    pw_verrified = False
+    while not pw_verrified:
+        password = getpass.getpass('Password:')
+        if len(password) >= 6:
+            pw_verrified = True
+            return password
+        else:
+            print "Password must have 6 or more characters"
+
+
 def get_latest_job_id(homepagesoup):
     link_items = homepagesoup.find_all(class_='carousel')[0]
     job_url = link_items.contents[1].attrs['href']
@@ -17,7 +39,7 @@ def get_latest_job_id(homepagesoup):
 
 def check_job_page(job_id, page_html):
 
-    if 'ENCONTRADA' in page_html.text:
+    if 'encontrada' in page_html.text:
         print '404: %s' % job_id
     elif 'pode ser visualizado por candidatos premium' in page_html.text:
         print 'premium: %s' % job_id
@@ -44,12 +66,25 @@ def get_job_opportunity(browser, job_id):
 
 
 def main():
+    email = getEmail()
+    password = getPassword()
+
     browser = webdriver.Firefox()
-    browser.get('http://www.ceviu.com.br/')
+    browser.get('https://www.ceviu.com.br/login')
+
+    emailElement = browser.find_element_by_id("p-login-usuario")
+    emailElement.send_keys(email)
+    passwordElement = browser.find_element_by_id("p-login-senha")
+    passwordElement.send_keys(password)
+    passwordElement.submit()
+
+    os.system('clear')
+    print("[+] Success! You are now logged in with %s." % email)
+    print("[+] The bot is starting!")
 
     home_page = BeautifulSoup(browser.page_source)
     #latest_job_id = get_latest_job_id(home_page)
-    latest_job_id = '4670633'
+    latest_job_id = '466608'
 
     latest_id_int = int(latest_job_id) + 1
     for job_id in reversed(range(latest_id_int)):
